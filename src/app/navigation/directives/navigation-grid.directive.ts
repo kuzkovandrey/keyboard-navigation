@@ -3,18 +3,22 @@ import {
   ContentChildren,
   Directive,
   HostListener,
+  OnDestroy,
   QueryList,
 } from '@angular/core';
 import { FocusableDirective } from '@navigation/directives';
 import { NavigationGridService } from '@navigation/services';
 import { Keys } from '@navigation/values';
 import { NavGrid } from '@navigation/types';
+import { Subscription } from 'rxjs';
 
 @Directive({
   selector: '[navigationGrid]',
   providers: [NavigationGridService],
 })
-export class NavigationGridDirective implements AfterContentInit {
+export class NavigationGridDirective implements AfterContentInit, OnDestroy {
+  private readonly subscriptions = new Subscription();
+
   @ContentChildren(FocusableDirective, {
     descendants: true,
     emitDistinctChangesOnly: true,
@@ -41,10 +45,16 @@ export class NavigationGridDirective implements AfterContentInit {
     this.navGrid = this.navGridService.createNavGrid(this.focusableItems);
     console.log(this.navGrid);
 
-    this.focusableItems.changes.subscribe(() => {
-      this.navGrid = this.navGridService.createNavGrid(this.focusableItems);
-      console.log(this.navGrid);
-    });
+    this.subscriptions.add(
+      this.focusableItems.changes.subscribe(() => {
+        this.navGrid = this.navGridService.createNavGrid(this.focusableItems);
+        console.log(this.navGrid);
+      }),
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
   onLeft() {

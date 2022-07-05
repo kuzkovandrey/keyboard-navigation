@@ -7,7 +7,7 @@ import {
   Output,
 } from '@angular/core';
 import { fromEvent, Subscription } from 'rxjs';
-import { NativeEvents } from '@navigation/values';
+import { Events } from '@navigation/values';
 import { FocusService } from '@navigation/services/focus.service';
 import { UUID } from '@navigation/utils';
 
@@ -40,14 +40,14 @@ export class FocusableDirective implements OnInit, OnDestroy {
     this.elementDomRect = this.element.getBoundingClientRect();
 
     this.subscriptions.add(
-      fromEvent(this.element, NativeEvents.FOCUS).subscribe(() => {
+      fromEvent(this.element, Events.FOCUS).subscribe(() => {
         this.focusChanges.emit(true);
         this.focusService.setFocusedItem(this);
       }),
     );
 
     this.subscriptions.add(
-      fromEvent(this.element, NativeEvents.BLUR).subscribe(() => {
+      fromEvent(this.element, Events.BLUR).subscribe(() => {
         this.focusChanges.emit(false);
       }),
     );
