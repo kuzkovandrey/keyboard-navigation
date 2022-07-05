@@ -9,7 +9,7 @@ export class NavigationGridService {
     const grid: NavGrid = {};
 
     array.forEach((focusable) => {
-      const rowPosition = focusable.domRect.y;
+      const rowPosition = focusable.DOMRect.y;
       const row = grid[rowPosition];
 
       grid[rowPosition] = row ? [...row, focusable] : [focusable];

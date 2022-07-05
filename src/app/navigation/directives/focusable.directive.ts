@@ -19,10 +19,10 @@ export class FocusableDirective implements OnInit, OnDestroy {
 
   private element: HTMLElement;
 
-  private elementDomRect: DOMRect;
+  private elementDOMRect: DOMRect;
 
-  get domRect(): Readonly<DOMRect> {
-    return Object.freeze(this.elementDomRect);
+  get DOMRect(): Readonly<DOMRect> {
+    return Object.freeze(this.elementDOMRect);
   }
 
   readonly uuid = UUID.generate('focusable');
@@ -36,8 +36,8 @@ export class FocusableDirective implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.element = this.elementRef.nativeElement;
-    this.element.tabIndex = 1;
-    this.elementDomRect = this.element.getBoundingClientRect();
+    this.element.tabIndex = -1;
+    this.elementDOMRect = this.element.getBoundingClientRect();
 
     this.subscriptions.add(
       fromEvent(this.element, Events.FOCUS).subscribe(() => {

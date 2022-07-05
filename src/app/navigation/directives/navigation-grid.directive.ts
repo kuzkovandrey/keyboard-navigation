@@ -28,10 +28,10 @@ export class NavigationGridDirective implements AfterContentInit, OnDestroy {
   private navGrid: NavGrid;
 
   private readonly keyHandlers = {
-    [Keys.ARROW_LEFT]: this.onLeft.bind(this),
-    [Keys.ARROW_RIGHT]: this.onRight.bind(this),
-    [Keys.ARROW_UP]: this.onUp.bind(this),
-    [Keys.ARROW_DOWN]: this.onDown.bind(this),
+    [Keys.ARROW_LEFT]: this.navGridService.onLeft,
+    [Keys.ARROW_RIGHT]: this.navGridService.onRight,
+    [Keys.ARROW_UP]: this.navGridService.onUp,
+    [Keys.ARROW_DOWN]: this.navGridService.onDown,
   };
 
   @HostListener('keydown', ['$event'])
@@ -55,21 +55,5 @@ export class NavigationGridDirective implements AfterContentInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
-  }
-
-  onLeft() {
-    this.navGridService.onLeft();
-  }
-
-  onRight() {
-    this.navGridService.onRight();
-  }
-
-  onUp() {
-    this.navGridService.onUp();
-  }
-
-  onDown() {
-    this.navGridService.onDown();
   }
 }
