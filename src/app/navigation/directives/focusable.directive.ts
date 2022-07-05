@@ -9,6 +9,7 @@ import {
 import { fromEvent, Subscription } from 'rxjs';
 import { NativeEvents } from '@navigation/values';
 import { FocusService } from '@navigation/services/focus.service';
+import { UUID } from '@navigation/utils';
 
 @Directive({
   selector: '[focusable]',
@@ -23,6 +24,8 @@ export class FocusableDirective implements OnInit, OnDestroy {
   get domRect(): Readonly<DOMRect> {
     return Object.freeze(this.elementDomRect);
   }
+
+  readonly uuid = UUID.generate('focusable');
 
   @Output() focusChanges = new EventEmitter<boolean>();
 
