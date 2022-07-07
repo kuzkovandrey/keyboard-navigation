@@ -20,6 +20,7 @@
     "target": "es2020",
     "module": "es2020",
     "lib": ["es2020", "dom"],
+    "strictNullChecks": false,
     "paths": {
       "@navigation/*": ["src/app/navigation/*"]
     }

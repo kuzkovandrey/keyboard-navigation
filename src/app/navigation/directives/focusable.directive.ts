@@ -1,3 +1,4 @@
+import { NavigationGridDirective } from './navigation-grid.directive';
 import {
   Directive,
   ElementRef,
@@ -5,11 +6,13 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  ViewContainerRef,
 } from '@angular/core';
 import { fromEvent, Subscription } from 'rxjs';
 import { Events } from '@navigation/values';
-import { FocusService } from '@navigation/services/focus.service';
+import { FocusableService } from '@navigation/services/focusable.service';
 import { UUID } from '@navigation/utils';
+import { Index } from '@navigation/types';
 
 @Directive({
   selector: '[focusable]',
@@ -17,9 +20,13 @@ import { UUID } from '@navigation/utils';
 export class FocusableDirective implements OnInit, OnDestroy {
   private readonly subscriptions = new Subscription();
 
+  private parentNavGrid: NavigationGridDirective;
+
   private element: HTMLElement;
 
   private elementDOMRect: DOMRect;
+
+  index: Index;
 
   get DOMRect(): Readonly<DOMRect> {
     return Object.freeze(this.elementDOMRect);
@@ -31,16 +38,26 @@ export class FocusableDirective implements OnInit, OnDestroy {
 
   constructor(
     private readonly elementRef: ElementRef,
-    private focusService: FocusService,
+    private readonly focusService: FocusableService,
+    private readonly viewContainerRef: ViewContainerRef,
   ) {}
 
   ngOnInit() {
+    this.parentNavGrid = this.viewContainerRef.injector.get(
+      NavigationGridDirective,
+    );
+
     this.element = this.elementRef.nativeElement;
+
     this.element.tabIndex = -1;
+
+    this.element.style.outline = 'none';
+
     this.elementDOMRect = this.element.getBoundingClientRect();
 
     this.subscriptions.add(
       fromEvent(this.element, Events.FOCUS).subscribe(() => {
+        this.setFocusAttribute(true);
         this.focusChanges.emit(true);
         this.focusService.setFocusedItem(this);
       }),
@@ -48,9 +65,14 @@ export class FocusableDirective implements OnInit, OnDestroy {
 
     this.subscriptions.add(
       fromEvent(this.element, Events.BLUR).subscribe(() => {
+        this.setFocusAttribute(false);
         this.focusChanges.emit(false);
       }),
     );
+  }
+
+  private setFocusAttribute(hasFocus: boolean) {
+    this.element.setAttribute('data-focused', `${hasFocus}`);
   }
 
   ngOnDestroy() {
@@ -59,5 +81,13 @@ export class FocusableDirective implements OnInit, OnDestroy {
 
   setFocus() {
     this.element.focus();
+  }
+
+  setIndex(index: Index) {
+    this.index = index;
+  }
+
+  enter() {
+    this.element.click();
   }
 }

@@ -2,19 +2,18 @@ import {
   AfterContentInit,
   ContentChildren,
   Directive,
-  HostListener,
   OnDestroy,
   QueryList,
 } from '@angular/core';
 import { FocusableDirective } from '@navigation/directives';
-import { NavigationGridService } from '@navigation/services';
 import { Keys } from '@navigation/values';
-import { NavGrid } from '@navigation/types';
 import { Subscription } from 'rxjs';
+import { FocusableService } from '@navigation/services/focusable.service';
+import { KeysService } from '@navigation/services/keys.service';
 
 @Directive({
   selector: '[navigationGrid]',
-  providers: [NavigationGridService],
+  providers: [FocusableService, KeysService],
 })
 export class NavigationGridDirective implements AfterContentInit, OnDestroy {
   private readonly subscriptions = new Subscription();
@@ -23,37 +22,66 @@ export class NavigationGridDirective implements AfterContentInit, OnDestroy {
     descendants: true,
     emitDistinctChangesOnly: true,
   })
-  private focusableItems: QueryList<FocusableDirective>;
-
-  private navGrid: NavGrid;
+  private items: QueryList<FocusableDirective>;
 
   private readonly keyHandlers = {
-    [Keys.ARROW_LEFT]: this.navGridService.onLeft,
-    [Keys.ARROW_RIGHT]: this.navGridService.onRight,
-    [Keys.ARROW_UP]: this.navGridService.onUp,
-    [Keys.ARROW_DOWN]: this.navGridService.onDown,
+    [Keys.ARROW_LEFT]: this.onLeft.bind(this),
+    [Keys.ARROW_RIGHT]: this.onRight.bind(this),
+    [Keys.ARROW_UP]: this.onUp.bind(this),
+    [Keys.ARROW_DOWN]: this.onDown.bind(this),
+    [Keys.ENTER]: this.onEnter.bind(this),
+    default: this.setFocusToLatestElement.bind(this),
   };
 
-  @HostListener('keydown', ['$event'])
-  private onKeyDown({ key }: KeyboardEvent) {
-    if (this.keyHandlers[key as Keys]) this.keyHandlers[key as Keys]();
-  }
-
-  constructor(private readonly navGridService: NavigationGridService) {}
+  constructor(
+    private readonly focusableService: FocusableService,
+    private readonly keysService: KeysService,
+  ) {}
 
   ngAfterContentInit() {
-    this.navGrid = this.navGridService.createNavGrid(this.focusableItems);
-    console.log(this.navGrid);
+    this.focusableService.createFocusableList(this.items);
 
     this.subscriptions.add(
-      this.focusableItems.changes.subscribe(() => {
-        this.navGrid = this.navGridService.createNavGrid(this.focusableItems);
-        console.log(this.navGrid);
+      this.keysService.onKeyDown$.subscribe(({ key: k }) => {
+        const key = k as Keys;
+        const handler = this.keyHandlers[key] ?? this.keyHandlers.default;
+
+        handler();
+      }),
+    );
+
+    this.subscriptions.add(
+      this.items.changes.subscribe(() => {
+        this.focusableService.createFocusableList(this.items);
       }),
     );
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+  }
+
+  onLeft() {
+    this.focusableService.onLeft();
+  }
+
+  onRight() {
+    this.focusableService.onRight();
+  }
+
+  onUp() {
+    this.focusableService.onUp();
+  }
+
+  onDown() {
+    this.focusableService.onDown();
+  }
+
+  onEnter() {
+    this.focusableService.onEnter();
+  }
+
+  setFocusToLatestElement() {
+    console.log('default');
   }
 }
